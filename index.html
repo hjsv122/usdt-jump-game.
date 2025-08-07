@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>USDT Jump Game</title>
+</head>
+<body>
+  <h1>🏆 لعبة القفز بالدولار - USDT</h1>
+  <p>رصيدك الحالي: <span id="balance">0</span> $</p>
+  <button onclick="jump()">اقفز واربح $10</button>
+  <p>سيتم السحب تلقائيًا عند الوصول إلى 250$</p>
+
+  <script>
+    let balance = 0;
+
+    function jump() {
+      balance += 10;
+      document.getElementById("balance").innerText = balance;
+
+      if (balance >= 250) {
+        withdraw();
+      }
+    }
+
+    function withdraw() {
+      fetch("/withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: balance })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message || "تم تنفيذ السحب");
+        balance = 0;
+        document.getElementById("balance").innerText = balance;
+      })
+      .catch(err => {
+        alert("فشل السحب، حاول لاحقًا");
+      });
+    }
+  </script>
+</body>
+</html>
