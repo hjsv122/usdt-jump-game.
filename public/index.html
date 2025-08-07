@@ -1,15 +1,103 @@
-app.post("/withdraw", async (req, res) => {
-  const { from, to } = req.body;
-  const amount = userProfits[from];
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <title>🏆 لعبة القفز بالدولار - USDT</title>
+  <style>
+    body {
+      text-align: center;
+      background-color: #333;
+      color: white;
+      font-family: Arial;
+      direction: rtl;
+      padding: 20px;
+    }
+    button {
+      font-size: 18px;
+      padding: 10px 20px;
+      margin-top: 10px;
+      cursor: pointer;
+    }
+    input {
+      font-size: 16px;
+      padding: 8px;
+      margin-top: 10px;
+      width: 300px;
+      max-width: 90%;
+    }
+  </style>
+</head>
+<body>
+  <h1>🏆 لعبة القفز بالدولار - USDT</h1>
+  <h2 id="balance">رصيدك الحالي: 0$</h2>
+  <button onclick="jump()">اقفز واربح 10$</button>
 
-  if (!amount || amount < 250) return res.status(400).send({ message: "الرصيد غير كاف للسحب", success: false });
+  <div id="withdraw-area" style="display: none;">
+    <br />
+    <input type="text" id="wallet" placeholder="أدخل عنوان محفظتك TRC20 هنا" />
+    <br />
+    <button onclick="withdraw()">💸 سحب الأرباح</button>
+  </div>
 
-  const fee = amount * 0.02;
-  const finalAmount = amount - fee;
+  <script>
+    const walletKey = "wallet123"; // مفتاح المستخدم التجريبي
+    let balance = 0;
 
-  // تنفيذ التحويل باستخدام TronGrid أو TronWeb هنا (لم يتم إدراجه الآن لأسباب أمنية)
+    async function fetchBalance() {
+      const res = await fetch(`/profit/${walletKey}`);
+      const data = await res.json();
+      balance = data.profit;
+      document.getElementById("balance").innerText = `رصيدك الحالي: ${balance}$`;
+      checkWithdraw();
+    }
 
-  userProfits[from] = 0; // تصفير الرصيد بعد السحب
+    async function jump() {
+      const res = await fetch("/add-profit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wallet: walletKey, amount: 10 }),
+      });
+      const data = await res.json();
+      balance = data.total;
+      document.getElementById("balance").innerText = `رصيدك الحالي: ${balance}$`;
+      checkWithdraw();
+    }
 
-  res.send({ message: `تم إرسال $${finalAmount.toFixed(2)} إلى ${to} بعد خصم الرسوم.`, success: true });
-});
+    function checkWithdraw() {
+      const area = document.getElementById("withdraw-area");
+      if (balance >= 250) {
+        area.style.display = "block";
+      } else {
+        area.style.display = "none";
+      }
+    }
+
+    async function withdraw() {
+      const address = document.getElementById("wallet").value.trim();
+      if (!address) return alert("من فضلك أدخل عنوان محفظتك أولًا");
+
+      const amount = balance * 0.98; // خصم 2%
+      const res = await fetch("/withdraw", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: address,
+          amount: amount.toFixed(2),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("✅ تم السحب بنجاح إلى محفظتك");
+        balance = 0;
+        document.getElementById("balance").innerText = `رصيدك الحالي: 0$`;
+        document.getElementById("withdraw-area").style.display = "none";
+      } else {
+        alert("❌ فشل السحب: " + (data.error || "حاول لاحقًا"));
+      }
+    }
+
+    fetchBalance();
+  </script>
+</body>
+</html>
