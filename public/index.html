@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Jump and Earn</title>
+    <meta charset="UTF-8" />
+    <script>
+      let wallet = prompt("أدخل عنوان محفظتك TRC20:");
+      let profit = 0;
+
+      function jump() {
+        profit += 0.1; // قيمة الربح لكل قفزة
+        document.getElementById("profit").innerText = profit.toFixed(2);
+        fetch("/add-profit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ wallet, amount: 0.1 }),
+        });
+      }
+
+      async function checkProfit() {
+        const res = await fetch("/profit/" + wallet);
+        const data = await res.json();
+        alert("إجمالي أرباحك: $" + data.profit.toFixed(2));
+      }
+    </script>
+  </head>
+  <body style="text-align:center">
+    <h1>🏃‍♂️ لعبة القفز والربح!</h1>
+    <p>اضغط على الزر للقفز وربح USDT!</p>
+    <button onclick="jump()">اقفز!</button>
+    <p>أرباحك الآن: $<span id="profit">0.00</span></p>
+    <button onclick="checkProfit()">تحقق من أرباحك</button>
+  </body>
+</html>
