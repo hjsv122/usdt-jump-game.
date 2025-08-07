@@ -8,7 +8,9 @@ let userProfits = {};
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static("public"));
+
+// ✅ عرض ملفات index.html من نفس مجلد المشروع (وليس مجلد public)
+app.use(express.static(__dirname));
 
 app.post("/add-profit", (req, res) => {
   const { wallet, amount } = req.body;
